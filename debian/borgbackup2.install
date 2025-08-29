@@ -1,0 +1,6 @@
+usr/bin
+usr/lib
+scripts/shell_completions/bash/borg		/usr/share/bash-completion/completions/
+# Temporarily skip fish and zsh completions to avoid versioning them
+#scripts/shell_completions/fish/borg.fish	/usr/share/fish/vendor_completions.d/
+#scripts/shell_completions/zsh/_borg		/usr/share/zsh/vendor-completions/

@@ -1,0 +1,18 @@
+This supposedly is a standard gbp package not deviating from defaults where it
+doesn't have to. When it does deviate, that's probably unintentional. Consider
+using `dgit --quilt=gbp push-source` for uploading.
+
+Due to borg 1.x and borg 2.x being incompatible and being a networked
+application, we allow coinstallation during bookworm. This is implemented using
+the `*-is-*` pattern pioneered by python. Deviating from it, borgbackup
+implicitly serves the role of the non-existent package
+`borgbackup-is-borgbackup1`. `borgbackup2` only contains versioned tools and
+`borgbackup-is-borgbackup2` only contains symbolic links. Reverse dependencies
+compatible with both borg versions should `Depends: borgbackup-is-borgbackup2 |
+borgbackup`.
+
+In agreement with upstream, the Python module has been moved to a private path.
+This serves two purposes:
+ * The module is not meant to be imported except by upstream. Its API is not
+   considered stable. Users should use the CLI instead.
+ * Moving the module is required for coinstallation.

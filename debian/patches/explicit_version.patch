@@ -1,0 +1,26 @@
+--- a/scripts/shell_completions/bash/borg
++++ b/scripts/shell_completions/bash/borg
+@@ -5,7 +5,7 @@
+ # Install:
+ # Copy this file to /usr/share/bash-completion/completions/ or /etc/bash_completion.d/
+ 
+-_borg()
++_borg2()
+ {
+     compopt -o default
+     COMPREPLY=()
+@@ -212,7 +212,7 @@
+         list_archives=1
+     fi
+     if (( $list_archives )) ; then
+-        local archives=$(borg list --short "${repository_name}" 2>/dev/null)
++        local archives=$(borg2 list --short "${repository_name}" 2>/dev/null)
+         COMPREPLY=( $(compgen -W "${archives}" -- "${typed_word}" ) )
+         return 0
+     fi
+@@ -220,4 +220,4 @@
+     return 0
+ }
+ 
+-complete -F _borg borg
++complete -F _borg2 borg2

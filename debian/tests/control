@@ -1,0 +1,41 @@
+Tests: unit
+Depends:
+  @,
+  coreutils,
+  e2fsprogs,
+  fakeroot,
+  fuse3,
+  python3-llfuse,
+  python3-pyfuse3,
+  python3-pytest,
+  python3-pytest-benchmark,
+  python3-pytest-cov,
+  python3-pytest-xdist,
+  xattr,
+Restrictions:
+  allow-stderr,
+  isolation-machine,
+  needs-sudo
+
+Tests: unit-nofuse
+Depends:
+  @,
+  coreutils,
+  e2fsprogs,
+  fakeroot,
+  python3-pytest,
+  python3-pytest-benchmark,
+  python3-pytest-cov,
+  python3-pytest-xdist,
+  xattr,
+Restrictions:
+  allow-stderr,
+  needs-sudo
+
+Tests: simplesession
+Depends: @, @recommends@
+Restrictions: isolation-machine, allow-stderr
+
+Tests: simplesession-nofuse
+Depends: @
+Restrictions: allow-stderr

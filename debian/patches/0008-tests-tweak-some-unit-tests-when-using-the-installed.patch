@@ -1,0 +1,61 @@
+From: Simon Chopin <schopin@ubuntu.com>
+Date: Thu, 31 Jul 2025 18:20:16 +0200
+Subject: tests: tweak some unit tests when using the installed testsuite
+
+In autopkgtests we want to test the installed code, but a couple of unit
+tests assume (not unreasonably) that they're run from the source repo.
+
+We introduce a new environment variable that allows us to tweak a few
+tests, either disabling them out-right or changing some of the paths to
+point to the installed files.
+
+This is *very* Debian-specific, no need to push upstream.
+
+Bug-Ubuntu: https://bugs.launchpad.net/ubuntu/+source/borgbackup2/+bug/2118916
+Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1110195
+Forwarded: not-needed
+---
+ src/borg/testsuite/shell_completions_test.py | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/src/borg/testsuite/shell_completions_test.py b/src/borg/testsuite/shell_completions_test.py
+index 3ec3e71..46fa326 100644
+--- a/src/borg/testsuite/shell_completions_test.py
++++ b/src/borg/testsuite/shell_completions_test.py
+@@ -1,14 +1,19 @@
+ import subprocess
++import os
+ from pathlib import Path
+ 
+ import pytest
+ 
++INSTALLED = os.environ.get("TEST_INSTALLED_CODE") == "1"
+ SHELL_COMPLETIONS_DIR = Path(__file__).parent / ".." / ".." / ".." / ".." / ".." / "scripts" / "shell_completions"
+ 
+ 
+ def test_bash_completion_is_valid():
+     """Test that the bash completion file is valid bash syntax."""
+-    bash_completion_file = SHELL_COMPLETIONS_DIR / "bash" / "borg"
++    if INSTALLED:
++        bash_completion_file = Path("/usr/share/bash-completion/completions/borg2")
++    else:
++        bash_completion_file = SHELL_COMPLETIONS_DIR / "bash" / "borg"
+     assert bash_completion_file.is_file()
+ 
+     # Check if bash is available
+@@ -22,6 +27,7 @@ def test_bash_completion_is_valid():
+     assert result.returncode == 0, f"Bash completion file has syntax errors: {result.stderr.decode()}"
+ 
+ 
++@pytest.mark.skipif(INSTALLED, reason="not installed in Debian")
+ def test_fish_completion_is_valid():
+     """Test that the fish completion file is valid fish syntax."""
+     fish_completion_file = SHELL_COMPLETIONS_DIR / "fish" / "borg.fish"
+@@ -38,6 +44,7 @@ def test_fish_completion_is_valid():
+     assert result.returncode == 0, f"Fish completion file has syntax errors: {result.stderr.decode()}"
+ 
+ 
++@pytest.mark.skipif(INSTALLED, reason="not installed in Debian")
+ def test_zsh_completion_is_valid():
+     """Test that the zsh completion file is valid zsh syntax."""
+     zsh_completion_file = SHELL_COMPLETIONS_DIR / "zsh" / "_borg"

@@ -1,0 +1,36 @@
+#!/usr/bin/sh
+
+set -euo pipefail
+
+cleanup() {
+  # preserve exit code
+  exit_code="$?"
+  echo 'Remove user/group "übel" again'
+  sudo groupdel übel || /usr/bin/true
+  sudo userdel übel || /usr/bin/true
+  exit "${exit_code}"
+}
+
+trap cleanup EXIT
+
+echo "Creating user 'übel', used in src/borg/testsuite/platform.py::test_non_ascii_acl"
+GROUPENTRY='übel:x:666:'
+# gross hack because groupadd can't handle bad names
+grep "${GROUPENTRY}" /etc/group || sudo sh -c "echo ${GROUPENTRY} >> /etc/group"
+id übel || sudo useradd --uid 666 --gid 666 --badname übel
+
+echo "Create borg.exe symlink for many tests in src/borg/testsuite/archiver.py"
+mkdir bin
+ln -s /usr/bin/borg ./bin/borg.exe
+PATH="$(pwd)/bin/:${PATH}"
+export PATH
+echo export PATH="$PATH" >> ~/.profile
+
+echo "Running the unit test suite ..."
+
+TEST_INSTALLED_CODE=1 \
+PYTHONPATH=/usr/lib/borgbackup2 \
+pytest \
+  -n auto -rs \
+  --benchmark-skip \
+  --pyargs borg.testsuite

@@ -1,15 +1,120 @@
-Source: template-repository
-Section: unknown
+Source: borgbackup2
+Section: admin
 Priority: optional
-Maintainer: Tsic404 <liuheng@deepin.org>
-Build-Depends: debhelper (>= 11)
-Standards-Version: 4.1.3
-Homepage: https://github.com/deepin-community/template-repository
-#Vcs-Browser: https://salsa.debian.org/debian/deepin-community-template-repository
-#Vcs-Git: https://salsa.debian.org/debian/deepin-community-template-repository.git
+Maintainer: Freexian Packaging Team <team+freexian@tracker.debian.org>
+Uploaders: Helmut Grohne <helmut@subdivi.de>
+Build-Depends: cython3,
+               debhelper-compat (= 13),
+               dh-sequence-python3,
+               dh-sequence-sphinxdoc,
+               fakeroot,
+               libacl1-dev,
+               libb2-dev,
+               libjs-bootstrap,
+               liblz4-dev,
+               libxxhash-dev,
+               libssl-dev,
+               libzstd-dev,
+               python3-dev,
+               python3-argon2,
+               python3-borghash (>= 0.1.0-1~),
+               python3-borgstore (>= 0.3.0-1~),
+               python3-packaging,
+               python3-guzzle-sphinx-theme,
+               python3-sphinxcontrib.jquery,
+               python3-dateutil <!nocheck>,
+               python3-llfuse [!hurd-any],
+               python3-msgpack (>= 1.0.3),
+               python3-pkgconfig,
+               python3-platformdirs (>= 2.6),
+               python3-pyfuse3 [!hurd-any],
+               python3-pytest <!nocheck>,
+               python3-pytest-benchmark <!nocheck>,
+               python3-pytest-cov <!nocheck>,
+               python3-setuptools,
+               python3-setuptools-scm,
+               python3-sphinx,
+Standards-Version: 4.7.2
+Rules-Requires-Root: no
+Homepage: https://borgbackup.github.io/borgbackup/
+Vcs-Git: https://salsa.debian.org/debian/borgbackup2.git
+Vcs-Browser: https://salsa.debian.org/debian/borgbackup2
+Testsuite: autopkgtest-pkg-python
+# functional unit tests have been configured in debian/tests/unit
 
-Package: template-repository
+Package: borgbackup2
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: <insert up to 60 chars description>
- <insert long description, indented with spaces>
+Depends: ${misc:Depends},
+         ${python3:Depends},
+         python3-borghash (>= 0.1.0-1~),
+         python3-borgstore (>= 0.3.0-1~),
+         ${shlibs:Depends}
+Recommends: fuse3, python3-pyfuse3 [!hurd-any]
+Suggests: borgbackup2-doc
+Description: deduplicating and compressing backup program (version 2.x)
+ Borg is a deduplicating and compressing backup program. Optionally, it
+ also supports authenticated encryption. It was forked from the attic
+ backup program.
+ .
+ The main goal of Borg is to provide an efficient and secure way to
+ backup data. The data deduplication technique used makes Borg suitable
+ for daily backups since only the changes are stored. The authenticated
+ encryption makes it suitable for backups to not fully trusted targets.
+ .
+ It can push backups to remote repositories accessed via ssh. A client
+ pushing a backup invokes "borg serve" on the repository host. It is
+ possible to restrict the ssh key to "borg serve" using the
+ authorized_keys command= clause.
+ .
+ Please note that the server and the client should be on the same
+ version of borgbackup. Using different versions of borgbackup on
+ client and server might result in 'incompatible API version' error
+ messages and a non-working backup. Borg 2.x can only read from Borg 1.x
+ repositories.
+ .
+ While there is no direct operations mode for pull-type backups, you
+ can configure the backup target in append-only mode, preventing the
+ backup source from deleting or altering previous backups.
+ .
+ Warning: This still is a beta that may break compatibility with the
+ final 2.0 release.
+
+Package: borgbackup-is-borgbackup2
+Architecture: any
+Depends: ${misc:Depends}, borgbackup2 (= ${binary:Version})
+Conflicts: borgbackup
+Description: deduplicating and compressing backup program (unversioned symlink)
+ This package makes the borg command refer to version 2.x of borgbackup.
+ If you prefer version 1.x, please install borgbackup instead.
+ .
+ Refer to the package descriptions of borgbackup and borgbackup2 for more
+ information about what borg is.
+ .
+ Warning: This still is a beta that may break compatibility with the
+ final 2.0 release.
+
+Package: borgbackup2-doc
+Architecture: all
+Multi-Arch: foreign
+Section: doc
+Depends: ${misc:Depends},
+         ${sphinxdoc:Depends},
+         fonts-liberation,
+         libjs-bootstrap,
+         libjs-mathjax,
+Description: deduplicating and compressing backup program (documentation for version 2.x)
+ Borg is a deduplicating and compressing backup program. Optionally, it
+ also supports authenticated encryption. It was forked from the attic
+ backup program.
+ .
+ The main goal of Borg is to provide an efficient and secure way to
+ backup data. The data deduplication technique used makes Borg suitable
+ for daily backups since only the changes are stored. The authenticated
+ encryption makes it suitable for backups to not fully trusted targets.
+ .
+ It can push backups to remote repositories accessed via ssh. A client
+ pushing a backup invokes "borg serve" on the repository host. It is
+ possible to restrict the ssh key to "borg serve" using the
+ authorized_keys command= clause.
+ .
+ This is the documentation package.
