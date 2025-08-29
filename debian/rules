@@ -1,4 +1,90 @@
 #!/usr/bin/make -f
 
+#export DH_VERBOSE=1
+
+
+# Do not install the borg package into the usual Python path:
+#  * Upstream does not consider its API stable.
+#  * We want to coinstall multiple versions of borg.
+VERSION_SUFFIX=2
+MODULE_DIR=/usr/lib/borgbackup$(VERSION_SUFFIX)
+PACKAGE=borgbackup$(VERSION_SUFFIX)
+SYMLINK_PACKAGE=borgbackup-is-borgbackup$(VERSION_SUFFIX)
+
+# Full hardening for the cython build.
+export DEB_BUILD_MAINT_OPTIONS=hardening=+all
+
+# pybuild: use pytest instead of auto-detection
+#
+# The autodetection failed on jessie, resulting in a failed
+# build, since unittest does not support pytest's command
+# line switches
+export PYBUILD_TEST_PYTEST=1
+
+# To display coverage information, add the following
+# switches to PYBUILD_TEST_ARGS (Upstream does this)
+#
+# Note that this currently breaks unittests on jessie,
+# because borg will trip over the unexpected coverage
+# files.  Since this failure does not occur in stretch,
+# this is likely due to an outdated version in jessie.
+#
+# --cov=borg --cov-config=../.coveragerc
+
 %:
-	dh $@
+	dh $@ --buildsystem=pybuild
+
+override_dh_auto_configure:
+	dh_auto_configure -- --install-dir=$(MODULE_DIR)
+
+execute_after_dh_auto_build:
+	PYTHONPATH=$(wildcard ./.pybuild/*/build) python3 scripts/make.py build_usage
+	PYTHONPATH=$(wildcard ./.pybuild/*/build) python3 scripts/make.py build_man
+
+execute_before_dh_installdocs-indep:
+	$(MAKE) -C docs html
+
+execute_before_dh_installman-arch:
+	$(MAKE) -C docs man
+
+# We run most of the tests in fakeroot to increase test coverage, but fakeroot
+# introduces race conditions on its own.
+TESTS_NO_FAKEROOT = benchmark_test.py cache_test.py checks_test.py key_test.py fslocking_test.py patterns_test.py remote_test.py repository_test.py shellpattern_test.py
+override_dh_auto_test: export TZ=UTC # tests break in TZ=GMT+12, see https://github.com/borgbackup/borg/issues/5535
+override_dh_auto_test: export LC_ALL=C.UTF-8
+override_dh_auto_test:
+	# fakeroot introduces race conditions to e.g. locking tests.
+	dh_auto_test -- --test-args "--pyargs borg.testsuite -k '$(subst $(eval) $(eval), or ,$(TESTS_NO_FAKEROOT))'"
+	# We cannot rely on the buildds allowing fuse to be
+	# used, so we disable the fuse-mount tests.
+	fakeroot dh_auto_test -- --test-args "--pyargs borg.testsuite -k 'not fuse_mount and not test_fuse and not test_migrate_lock_alive and not test_with_socket and not test_socket_permissions $(foreach t,$(TESTS_NO_FAKEROOT),and not $(t))'"
+
+execute_after_dh_install-arch:
+	# Add the private module directory to sys.path in borg executables
+	set -e; for f in debian/$(PACKAGE)/usr/bin/*; do \
+		sed -i -e '5asys.path.insert(0, "$(MODULE_DIR)")' "$$f"; \
+	done
+ifneq (,$(VERSION_SUFFIX))
+	# Rename executables using VERSION_SUFFIX, but create symlinked
+	# versions for the borgbackup-is-borgbackup2 package
+	set -e; for f in debian/$(PACKAGE)/usr/bin/*; do \
+		mv "$$f" "$${f}$(VERSION_SUFFIX)"; \
+		ln -s "$${f##*/}$(VERSION_SUFFIX)" "debian/$(SYMLINK_PACKAGE)$${f#debian/$(PACKAGE)}"; \
+	done
+	mv 'debian/$(PACKAGE)/usr/share/bash-completion/completions/borg' 'debian/$(PACKAGE)/usr/share/bash-completion/completions/borg$(VERSION_SUFFIX)'
+
+execute_after_dh_installman-arch:
+	# Fix manpage names to match executables
+	set -e; for f in debian/$(PACKAGE)/usr/share/man/man1/*.1; do \
+		v=$$(echo "$$f" | sed 's,^\(.*/[a-z]*\),&$(VERSION_SUFFIX),'); \
+		mv "$$f" "$$v"; \
+		ln -s "$${v##*/}.gz" "debian/$(SYMLINK_PACKAGE)$${f#debian/$(PACKAGE)}.gz"; \
+	done
+endif
+
+override_dh_installdocs-arch:
+	dh_installdocs --link-doc=borgbackup2
+
+# Do not compress .ico file (affects html documentation)
+override_dh_compress:
+	dh_compress -X.ico -Xfonts

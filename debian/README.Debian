@@ -1,0 +1,27 @@
+borgbackup 2.x migration notes
+==============================
+
+This borg 2.x package contains a beta release. As such it may still break
+compatibility with the final 2.0 release your backups may become incompatible
+with the actual borg 2.0 release.
+
+borg 2.x is incompatible with borg 1.x. This affects both the interface and the
+repository format. For instance `borg init` has become `borg repo-create`. The only
+thing borg 2.x can do with a borg 1.x repository or borg 1.x serve is read.
+Thus, repositories must be upgraded to the borg 2.x repository format using
+`borg transfer` which copies the contents. For Debian, borg 1.x and borg 2.x
+are packaged in a coinstallable way such that borg 2.x is available as the
+`borg2` command.
+
+Thus borg 1.x and borg 2.x are packaged in a coinstallable way. If you upgrade
+from an earlier release, the `borgbackup` package continues to be borg 1.x. You
+can additionally install `borgbackup2` and initiate the migration using `borg2`
+commands. Once you are confident, you can install `borgbackup-is-borgbackup2`
+to turn the unversiond borg command into version 2.x. This will remove borg 1.x
+and all reverse dependencies that are not compatible with borg 2.x. Please use
+the bookworm cycle to remove your usage of borg 1.x as it shall not be part of
+trixie.
+
+Users of `borgbackup2` that interact with a server lacking
+`borgbackup-is-borgbackup2` should pass `--remote-path=borg2`. The name of the
+borg binary can be different for cloud storage providers.

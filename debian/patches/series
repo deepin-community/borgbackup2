@@ -1,0 +1,8 @@
+privacy/0001-Remove-codecov.io-and-travis-ci.org-badges.patch
+privacy/0002-README.rst-Replace-img-src-with-text-link.patch
+privacy/installation_badge.patch
+privacy/mathjax.patch
+explicit_version.patch
+manifest-data-files.patch
+fix-testsuite-shell.patch
+0008-tests-tweak-some-unit-tests-when-using-the-installed.patch

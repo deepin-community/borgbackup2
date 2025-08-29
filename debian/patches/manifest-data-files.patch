@@ -1,0 +1,37 @@
+From 3078c3cbe69724f28a76890f5b1ae6fb9aa906b6 Mon Sep 17 00:00:00 2001
+From: Simon Chopin <simon.chopin@canonical.com>
+Date: Mon, 16 Oct 2023 10:34:51 +0200
+Subject: [PATCH] packaging: Explicit add data files to the manifest
+
+We've started seeing some failures to build in Debian and Ubuntu that
+can be traced to those files missing from the manifest when we're
+calling setup.py install.
+
+Now, this started failing fairly recently, so I'm guessing it's actually
+a change of behaviour in the SCM plugin and/or setuptools. It makes
+sense though, since we're packaging from the tarball, which isn't in the
+Git context needed to actually include those data files.
+
+Signed-off-by: Simon Chopin <simon.chopin@canonical.com>
+Forwarded: https://github.com/borgbackup/borg/pull/7876
+Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1052875
+Bug-Ubuntu: https://bugs.launchpad.net/ubuntu/+source/borgbackup2/+bug/2039423
+---
+ MANIFEST.in | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/MANIFEST.in b/MANIFEST.in
+index caf027ad..50c5c565 100644
+--- a/MANIFEST.in
++++ b/MANIFEST.in
+@@ -6,3 +6,7 @@ prune .github
+ include src/borg/platform/darwin.c src/borg/platform/freebsd.c src/borg/platform/linux.c src/borg/platform/posix.c
+ include src/borg/platform/syncfilerange.c
+ include src/borg/platform/windows.c
++include src/borg/paperkey.html
++include src/borg/testsuite/archiver/repo12.tar.gz
++include src/borg/testsuite/archiver/dotdot_path.tar
++include src/borg/testsuite/archiver/unusual_paths.tar
+--
+2.40.1
+

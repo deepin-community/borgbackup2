@@ -1,0 +1,8 @@
+--- a/docs/conf.py
++++ b/docs/conf.py
+@@ -252,3 +252,5 @@
+     "issue": ("https://github.com/borgbackup/borg/issues/%s", "#%s"),
+     "targz_url": ("https://pypi.python.org/packages/source/b/borgbackup/%%s-%s.tar.gz" % version, None),
+ }
++
++mathjax_path = 'file:///usr/share/javascript/mathjax/MathJax.js'

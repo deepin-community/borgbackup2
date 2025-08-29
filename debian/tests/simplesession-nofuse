@@ -1,0 +1,47 @@
+#!/bin/bash
+
+#Fail on error
+set -e
+
+export HOME=$AUTOPKGTEST_TMP/home
+mkdir "$HOME"
+DATA=$AUTOPKGTEST_TMP/data
+export BORG_REPO=$AUTOPKGTEST_TMP/borgrepo
+
+cd $AUTOPKGTEST_TMP
+
+borg() {
+	borg2 "$@"
+}
+
+echo "Checking borg is callable"
+borg --version
+
+echo "Creating source data dir and mountpoint"
+mkdir $DATA
+
+echo "Calling borg repo-create"
+borg repo-create --encryption none
+
+# create source data
+
+echo "Creating runone"
+echo Hello, world > $DATA/file1
+borg create runone data/
+
+echo "Creating runtwo"
+echo Hello again > $DATA/file2
+borg create runtwo data/
+
+echo "Listing archives"
+borg repo-list
+
+echo "Listing runone and runtwo contents"
+borg list runone
+borg list runtwo
+
+echo "Testing borg extract --stdout"
+borg extract --stdout runtwo data/file1 | grep -q "world"
+borg extract --stdout runtwo data/file2 | grep -q "again"
+
+echo "All good!"
